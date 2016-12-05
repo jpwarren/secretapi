@@ -21,44 +21,43 @@ class HolidaySecretAPI:
 
 	# Storage for all 50 globe values
 	# 
-	globes = [ [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00],
-	[ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00],
-	[ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00],
-	[ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00],
-	[ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00],
-	[ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00],
-	[ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00],
-	[ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00],
-	[ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00],
-	[ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00], [ 0x00, 0x00, 0x00] ]
+        globes = [ (0,0,0), ] * NUM_GLOBES
 
-	def __init__(self, addr=''):
+	def __init__(self, addr='', port=9988):
 		"""If remote, you better supply a valid address.  
 		We'll throw an exception when you don't do this."""
 		self.addr = addr    # IP address we're chatting with.
-		self.port = 9988	# Secret API port
+		self.port = port    # Secret API port
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
 
 	def setglobe(self, globenum, r, g, b):
 		"""Set a globe"""
 		if (globenum < 0) or (globenum >= self.NUM_GLOBES):
 			return
-		self.globes[globenum][0] = r
-		self.globes[globenum][1] = g
-		self.globes[globenum][2] = b
+                self.globes[globenum] = (r, g, b)
 
 	def fill(self, r, g, b):
 		"""Sets the whole string to a particular colour"""
-		for e in self.globes:
-			e[0] = int(r)
-			e[1] = int(g)
-			e[2] = int(b)
+                self.globes = [ (int(r), int(g), int(b)), ] * self.NUM_GLOBES
+		#for e in self.globes:
+		#	e[0] = int(r)
+		#	e[1] = int(g)
+		#	e[2] = int(b)
 
 	def getglobe(self, globenum):
 		"""Return a tuple representing a globe's RGB color value"""
 		if (globenum < 0) or (globenum >= self.NUM_GLOBES):
-			return False
-		return (self.globes[globenum][0], self.globes[globenum][1], self.globes[globenum][2])
+                        # Fail hard, don't ignore errors
+                        raise IndexError("globenum %d does not exist", globenum)
+		return self.globes[globenum]
+
+        def set_pattern(self, pattern):
+                """
+                Set the entire string in one go
+                """
+                if len(pattern) != self.NUM_GLOBES:
+                        raise ValueError("pattern length incorrect: %d != %d" % ( len(pattern), self.NUM_GLOBES) )
+                self.globes = pattern[:]
 
 	def chase(self, direction="True"):
 		"""Rotate all of the globes around - up if TRUE, down if FALSE"""
